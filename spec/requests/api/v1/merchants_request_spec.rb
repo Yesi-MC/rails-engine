@@ -54,12 +54,6 @@ describe "Merchants API" do
 
     merchant_items = merchant[:data][:relationships][:items][:data]
 
-    # expect(merchant[:data][:attributes]).to have_key(:id)
-    # expect(merchant[:data][:attributes][:id]).to eq(id)
-
-    # expect(merchant[:data][:attributes]).to have_key(:name)
-    # expect(merchant[:data][:attributes][:name]).to be_a(String)
-
     merchant_items.each do |item|
       expect(item).to have_key(:id)
       expect(item[:id]).to be_an(String)

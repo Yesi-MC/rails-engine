@@ -34,4 +34,38 @@ describe "Merchants API" do
     expect(merchant[:data][:attributes]).to have_key(:name)
     expect(merchant[:data][:attributes][:name]).to be_a(String)
   end
+  it "can get all items by its given id" do 
+    # id = create(:merchant).id
+    merchant = create(:merchant)
+    3.times do 
+      Item.create!(
+    name: Faker::Lorem.word,
+    description: Faker::Lorem.sentence,
+    unit_price: Faker::Number.decimal(l_digits: 2),
+    merchant_id: merchant.id
+  )
+  end
+
+    get "/api/v1/merchants/#{merchant.id}"
+
+    merchant = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response).to be_successful
+
+    merchant_items = merchant[:data][:relationships][:items][:data]
+
+    # expect(merchant[:data][:attributes]).to have_key(:id)
+    # expect(merchant[:data][:attributes][:id]).to eq(id)
+
+    # expect(merchant[:data][:attributes]).to have_key(:name)
+    # expect(merchant[:data][:attributes][:name]).to be_a(String)
+
+    merchant_items.each do |item|
+      expect(item).to have_key(:id)
+      expect(item[:id]).to be_an(String)
+
+      expect(item).to have_key(:type)
+      expect(item[:type]).to be_a(String)
+    end 
+  end
 end 

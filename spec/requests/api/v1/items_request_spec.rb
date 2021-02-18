@@ -12,8 +12,8 @@ describe "Items API" do
     expect(items[:data].count).to eq(3)
 
     items[:data].each do |item|
-      expect(item[:attributes]).to have_key(:id)
-      expect(item[:attributes][:id]).to be_an(Integer)
+      expect(item).to have_key(:id)
+      expect(item[:id]).to be_an(String)
 
       expect(item[:attributes]).to have_key(:name)
       expect(item[:attributes][:name]).to be_a(String)
@@ -34,8 +34,8 @@ describe "Items API" do
 
     expect(response).to be_successful
 
-    expect(item[:data][:attributes]).to have_key(:id)
-    expect(item[:data][:attributes][:id]).to eq(id)
+    expect(item[:data]).to have_key(:id)
+    expect(item[:data][:id]).to eq(id.to_s)
 
     expect(item[:data][:attributes]).to have_key(:name)
     expect(item[:data][:attributes][:name]).to be_a(String)
@@ -58,7 +58,7 @@ describe "Items API" do
 
     headers = {"CONTENT_TYPE" => "application/json"}  
       
-    post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
+    post "/api/v1/items", headers: headers, params: JSON.generate(item_params)
     created_item = Item.last
 
     expect(response).to be_successful
@@ -74,7 +74,7 @@ describe "Items API" do
     item_params = { name: "ipod nano" }
     headers = {"CONTENT_TYPE" => "application/json"}
     
-    patch "/api/v1/items/#{id}", headers: headers, params: JSON.generate({item: item_params})
+    patch "/api/v1/items/#{id}", headers: headers, params: JSON.generate(item_params)
     item = Item.find_by(id: id)
 
     expect(response).to be_successful

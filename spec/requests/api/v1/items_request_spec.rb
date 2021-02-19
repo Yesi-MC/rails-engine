@@ -92,4 +92,84 @@ describe "Items API" do
     expect(Item.count).to eq(0)
     expect{Item.find(item.id)}.to raise_error(ActiveRecord::RecordNotFound)
   end
+  it "can get the merchant data for given item id" do 
+    id = create(:item).id
+    item = create(:item)
+      2.times do 
+        Merchant.create!(name: Faker::Company.name)
+     end
+
+    get "/api/v1/items/#{item.id}/merchant" 
+
+    item = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response).to be_successful
+
+    expect(item[:data]).to have_key(:id)
+    expect(item[:data][:id]).to be_a(String)
+
+    expect(item[:data]).to have_key(:type)
+    expect(item[:data][:type]).to be_a(String)
+
+    expect(item[:data]).to have_key(:attributes)
+    expect(item[:data][:attributes]).to be_a(Hash)
+
+    item_data = item[:data][:attributes]
+
+    expect(item_data).to have_key(:name)
+    expect(item_data[:name]).to be_a(String)
+  end 
+  it "can only have 20 per page" do
+     create_list(:item, 30)
+ 
+    get '/api/v1/items?page=1'
+
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true) 
+
+    expect(items[:data].count).to eq(20)
+
+    items[:data].each do |item|
+      expect(item).to have_key(:id)
+      expect(item[:id]).to be_an(String)
+
+      expect(item[:attributes]).to have_key(:name)
+      expect(item[:attributes][:name]).to be_a(String)
+
+      expect(item[:attributes]).to have_key(:description)
+      expect(item[:attributes][:description]).to be_a(String)
+
+      expect(item[:attributes]).to have_key(:unit_price)
+      expect(item[:attributes][:unit_price]).to be_a(Numeric)
+    end 
+  end 
+  it "can get one merchant by search term" do 
+    merchant1 = Merchant.create!(name: 'Apple')
+    item1 = Item.create!(name: 'Ipad', description: 'like a mini computer', unit_price: 120.50, merchant_id: merchant1.id)
+    item2 = Item.create!(name: 'Ipad Pro', description: 'better mini computer', unit_price: 122.55, merchant_id: merchant1.id)
+    item3 = Item.create!(name: 'Ipod Shuffle', description: 'listen to tunes', unit_price: 125.55, merchant_id: merchant1.id)
+
+    get '/api/v1/items/find_all?name=ipA'
+    
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true) 
+
+    expect(items[:data].count).to eq(2)
+
+    items[:data].each do |item|
+      expect(item).to have_key(:id)
+      expect(item[:id]).to be_an(String)
+
+      expect(item[:attributes]).to have_key(:name)
+      expect(item[:attributes][:name]).to be_a(String)
+
+      expect(item[:attributes]).to have_key(:description)
+      expect(item[:attributes][:description]).to be_a(String)
+
+      expect(item[:attributes]).to have_key(:unit_price)
+      expect(item[:attributes][:unit_price]).to be_a(Numeric)
+    end 
+  end
 end 

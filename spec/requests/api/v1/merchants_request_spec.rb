@@ -4,7 +4,7 @@ describe "Merchants API" do
   it "sends a list of merchants" do
     create_list(:merchant, 3)
 
-    get '/api/v1/merchants'   #?page=2' include this in the url these params would be in controller 
+    get '/api/v1/merchants'   
     expect(response).to be_successful
 
     merchants = JSON.parse(response.body, symbolize_names: true) 
@@ -60,5 +60,39 @@ describe "Merchants API" do
       expect(item).to have_key(:type)
       expect(item[:type]).to be_a(String)
     end 
+  end
+  it "can only have 20 per page" do
+    create_list(:merchant, 20)
+ 
+    get '/api/v1/merchants?page=1'  
+    expect(response).to be_successful
+
+    merchants = JSON.parse(response.body, symbolize_names: true) 
+
+    expect(merchants[:data].count).to eq(20)
+
+    merchants[:data].each do |merchant|
+      expect(merchant).to have_key(:id)
+      expect(merchant[:id]).to be_a(String)
+
+      expect(merchant[:attributes]).to have_key(:name)
+      expect(merchant[:attributes][:name]).to be_a(String)
+    end 
+  end 
+  it "can get one merchant by search term" do 
+    merchant1 = Merchant.create!(name: 'Amazon')
+    merchant2 = Merchant.create!(name: 'Alibaba')
+
+    get '/api/v1/merchants/find?name=aMa'
+    
+    merchant = JSON.parse(response.body, symbolize_names: true) 
+    
+    expect(response).to be_successful
+
+    expect(merchant[:data]).to have_key(:id)
+    expect(merchant[:data][:id]).to be_a(String)
+
+    expect(merchant[:data][:attributes]).to have_key(:name)
+    expect(merchant[:data][:attributes][:name]).to be_a(String)
   end
 end 
